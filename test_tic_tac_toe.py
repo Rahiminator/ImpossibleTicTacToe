@@ -4,27 +4,40 @@ from tic_tac_toe import TicTacToe
 class TestUnbeatableAI(unittest.TestCase):
     
     def setUp(self):
+        # Create a fresh game instance before each test
         self.game = TicTacToe()
+
         # Prevent GUI from showing during tests
         self.game.window.withdraw()
     
     def tearDown(self):
+        # Clean up the Tkinter window after each test
         self.game.window.destroy()
     
     def play_game(self, player_moves):
-        """Simulate a game with given player moves"""
+        """
+        Simulate a game using a sequence of player moves.
+        Returns:
+            'X'      -> player wins
+            'O'      -> AI wins
+            'Draw'   -> board filled with no winner
+            'Incomplete' -> game did not finish
+        """
         self.game.reset_game()
         
         for move in player_moves:
+            # Stop if game ended or move is invalid
             if self.game.game_over or self.game.board[move] != ' ':
                 break
             
             # Player move
             self.game.board[move] = 'X'
             
+            # Check if player wins
             if self.game.check_winner('X'):
                 return 'X'
             
+            # Check draw
             if self.game.is_board_full():
                 return 'Draw'
             
@@ -32,9 +45,11 @@ class TestUnbeatableAI(unittest.TestCase):
             ai_move = self.game.best_move()
             self.game.board[ai_move] = 'O'
             
+            # Check if AI wins
             if self.game.check_winner('O'):
                 return 'O'
             
+            # Check draw
             if self.game.is_board_full():
                 return 'Draw'
         
@@ -81,6 +96,7 @@ class TestUnbeatableAI(unittest.TestCase):
     def test_ai_takes_winning_move(self):
         """Test AI takes winning move when available"""
         self.game.reset_game()
+
         # Set up board where AI can win
         self.game.board = ['O', 'O', ' ', 'X', 'X', ' ', ' ', ' ', ' ']
         move = self.game.best_move()
@@ -89,6 +105,7 @@ class TestUnbeatableAI(unittest.TestCase):
     def test_ai_prioritizes_win_over_block(self):
         """Test AI wins instead of blocking when both are possible"""
         self.game.reset_game()
+
         # AI can win at 2, or block at 8
         self.game.board = ['O', 'O', ' ', 'X', 'X', ' ', ' ', ' ', ' ']
         move = self.game.best_move()
@@ -112,6 +129,7 @@ class TestUnbeatableAI(unittest.TestCase):
         """Test AI creates forks when possible"""
         self.game.reset_game()
         # Set up board where AI can create a fork
+
         self.game.board = ['O', ' ', ' ', ' ', 'X', ' ', ' ', ' ', 'O']
         fork_move = self.game.find_fork_move('O')
         self.assertIsNotNone(fork_move, "AI should find fork opportunity")
@@ -120,6 +138,7 @@ class TestUnbeatableAI(unittest.TestCase):
         """Test AI blocks opponent forks"""
         self.game.reset_game()
         # Set up board where player can create a fork
+
         self.game.board = ['X', ' ', ' ', ' ', 'O', ' ', ' ', ' ', 'X']
         move = self.game.best_move()
         # AI should block the fork - taking a corner (2, 6) or side (1, 3, 5, 7) are all valid defensive moves
@@ -127,6 +146,7 @@ class TestUnbeatableAI(unittest.TestCase):
         
         # Verify the move actually prevents the player from winning
         self.game.board[move] = 'O'
+
         # Player should not have a winning move available
         player_win_move = self.game.find_winning_move('X')
         self.assertIsNone(player_win_move, "AI's move should prevent immediate player win")
@@ -153,6 +173,7 @@ class TestUnbeatableAI(unittest.TestCase):
     
     def test_common_strategies(self):
         """Test common player strategies fail"""
+
         # Strategy 1: Opposite corners
         result = self.play_game([0, 8, 2, 6])
         self.assertNotEqual(result, 'X', "Opposite corners strategy should not win")
@@ -185,4 +206,5 @@ class TestUnbeatableAI(unittest.TestCase):
                     self.game.board[ai_move] = 'O'
 
 if __name__ == '__main__':
+    # Run tests with detailed output
     unittest.main(verbosity=2)
