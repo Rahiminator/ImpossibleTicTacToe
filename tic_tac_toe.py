@@ -3,56 +3,89 @@ from tkinter import messagebox
 
 class TicTacToe:
     def __init__(self):
+        # Create main game window
         self.window = tk.Tk()
         self.window.title("Impossible Tic Tac Toe")
-        self.window.resizable(False, False)
+        self.window.resizable(False, False) # Prevent window resizing
         
+        # Internal board representation (9 cells)
         self.board = [' '] * 9
+
+        # Store button widgets for UI updates
         self.buttons = []
+
+        # Track whether the game has ended
         self.game_over = False
         
+        # Build the UI board
         self.create_board()
         
     def create_board(self):
+        # Frame to hold the 3x3 grid
         frame = tk.Frame(self.window)
         frame.pack(padx=10, pady=10)
         
+        # Create 9 buttons for the board
         for i in range(9):
-            btn = tk.Button(frame, text=' ', font=('Arial', 40), width=5, height=2,
-                          command=lambda idx=i: self.player_move(idx))
+            btn = tk.Button(
+                frame, 
+                text=' ', 
+                font=('Arial', 40), 
+                width=5, 
+                height=2,
+                command=lambda idx=i: self.player_move(idx)) # Handle player click
+            
+            # Position button in 3x3 grid
             btn.grid(row=i//3, column=i%3, padx=2, pady=2)
+
+            # Store reference for later updates
             self.buttons.append(btn)
         
-        reset_btn = tk.Button(self.window, text='New Game', font=('Arial', 14),
-                             command=self.reset_game)
+        # New Game button
+        reset_btn = tk.Button(
+            self.window, 
+            text='New Game', 
+            font=('Arial', 14),
+            command=self.reset_game
+        )
         reset_btn.pack(pady=5)
         
     def player_move(self, pos):
+        # Ignore move if game is over or cell is occupied
         if self.game_over or self.board[pos] != ' ':
             return
         
+        # Apply player move
         self.board[pos] = 'X'
         self.buttons[pos].config(text='X', fg='blue')
         
+        # Check win
         if self.check_winner('X'):
             self.end_game("You won! (This shouldn't happen...)")
             return
         
+        # Check draw
         if self.is_board_full():
             self.end_game("It's a draw!")
             return
         
+        # AI turn
         self.ai_move()
         
     def ai_move(self):
+        # Get best move from AI logic
         move = self.best_move()
+
+        # Apply AI move
         self.board[move] = 'O'
         self.buttons[move].config(text='O', fg='red')
         
+        # Check win
         if self.check_winner('O'):
             self.end_game("I win! Better luck next time.")
             return
         
+        # Check draw
         if self.is_board_full():
             self.end_game("It's a draw!")
             return
@@ -101,10 +134,11 @@ class TicTacToe:
         return 0
     
     def find_winning_move(self, player):
+        # All possible winning line combinations
         lines = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],  # cols
-            [0, 4, 8], [2, 4, 6]              # diagonals
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], # Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], # Columns
+            [0, 4, 8], [2, 4, 6]             # Diagonals
         ]
         
         for line in lines:
@@ -114,12 +148,14 @@ class TicTacToe:
         
         return None
     
+    # Check each line for 2 marks + 1 empty
     def find_fork_move(self, player):
         for i in range(9):
             if self.board[i] == ' ':
                 self.board[i] = player
                 winning_moves = 0
                 
+                # Count resulting winning paths
                 for j in range(9):
                     if self.board[j] == ' ':
                         self.board[j] = player
@@ -127,6 +163,7 @@ class TicTacToe:
                             winning_moves += 1
                         self.board[j] = ' '
                 
+                # Reset simulation
                 self.board[i] = ' '
                 
                 if winning_moves >= 2:
@@ -135,18 +172,21 @@ class TicTacToe:
         return None
     
     def block_fork(self, opponent):
+        # Reuse fork detection to block opponent
         fork_pos = self.find_fork_move(opponent)
         if fork_pos is not None:
             return fork_pos
         return None
 
     def check_winner(self, player):
+        # Same win line combinations
         lines = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
             [0, 3, 6], [1, 4, 7], [2, 5, 8],
             [0, 4, 8], [2, 4, 6]
         ]
         
+        # Check if any line is fully occupied by player
         for line in lines:
             if all(self.board[i] == player for i in line):
                 return True
@@ -154,21 +194,30 @@ class TicTacToe:
         return False
     
     def is_board_full(self):
+        # Draw condition
         return ' ' not in self.board
     
     def end_game(self, message):
+        # Stop further moves
         self.game_over = True
+
+        # Show popup message
         messagebox.showinfo("Game Over", message)
     
     def reset_game(self):
+        # Reset board state
         self.board = [' '] * 9
         self.game_over = False
+
+        # Clear UI buttons
         for btn in self.buttons:
             btn.config(text=' ', fg='black')
     
     def run(self):
+        # Start Tkinter event loop
         self.window.mainloop()
 
+# Entry point
 if __name__ == "__main__":
     game = TicTacToe()
     game.run()
